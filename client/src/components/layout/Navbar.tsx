@@ -1,4 +1,5 @@
-import { ClawIcon, ArrowIcon } from '../../icons';
+import { useState } from 'react';
+import { ClawIcon, ArrowIcon, MenuIcon, XIcon } from '../../icons';
 import { Button } from '../common/Button';
 import styles from './Navbar.module.css';
 
@@ -9,12 +10,14 @@ interface NavbarProps {
 const navLinks = ['Features', 'Templates', 'Pricing', 'Docs'];
 
 export function Navbar({ scrolled }: NavbarProps) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <nav
       className={styles.nav}
       style={{
-        backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        background: scrolled ? 'rgba(8,9,12,0.85)' : 'transparent',
+        backdropFilter: scrolled || mobileOpen ? 'blur(20px)' : 'none',
+        background: scrolled || mobileOpen ? 'rgba(8,9,12,0.95)' : 'transparent',
         borderBottom: scrolled
           ? '1px solid rgba(255,255,255,0.05)'
           : '1px solid transparent',
@@ -44,7 +47,37 @@ export function Navbar({ scrolled }: NavbarProps) {
             Get Started <ArrowIcon />
           </Button>
         </div>
+        <button
+          className={styles.hamburger}
+          onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <XIcon /> : <MenuIcon />}
+        </button>
       </div>
+
+      {mobileOpen && (
+        <div className={styles.mobileMenu}>
+          {navLinks.map((link) => (
+            <a
+              key={link}
+              href={`#${link.toLowerCase()}`}
+              className={styles.mobileLink}
+              onClick={() => setMobileOpen(false)}
+            >
+              {link}
+            </a>
+          ))}
+          <div className={styles.mobileActions}>
+            <Button variant="ghost" style={{ width: '100%', justifyContent: 'center' }}>
+              Sign In
+            </Button>
+            <Button variant="primary" style={{ width: '100%', justifyContent: 'center' }}>
+              Get Started <ArrowIcon />
+            </Button>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

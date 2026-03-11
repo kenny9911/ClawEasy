@@ -47,3 +47,18 @@
   color: #888;
   line-height: 1.6;
 }
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 16px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    padding: 22px;
+  }
+}

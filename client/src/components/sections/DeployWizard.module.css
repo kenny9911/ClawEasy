@@ -180,3 +180,39 @@
   justify-content: space-between;
   margin-top: 24px;
 }
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 16px;
+  }
+
+  .wizard {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .steps {
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+
+  .stepLabel {
+    font-size: 11px;
+  }
+
+  .stepLine {
+    width: 20px;
+  }
+
+  .templateGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .channelGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modelGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

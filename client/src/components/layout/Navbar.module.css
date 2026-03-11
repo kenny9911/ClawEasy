@@ -53,3 +53,61 @@
   align-items: center;
   gap: 12px;
 }
+
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.mobileMenu {
+  display: none;
+}
+
+.mobileLink {
+  display: block;
+  padding: 14px 0;
+  font-size: 16px;
+  color: #ccc;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: color 0.2s;
+}
+
+.mobileLink:hover {
+  color: #ff6b35;
+}
+
+.mobileActions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .nav {
+    padding: 0 16px;
+  }
+
+  .links {
+    display: none;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .mobileMenu {
+    display: block;
+    padding: 8px 0 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}

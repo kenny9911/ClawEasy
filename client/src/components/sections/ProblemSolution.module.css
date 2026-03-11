@@ -32,3 +32,24 @@
   font-size: 20px;
   color: #fff;
 }
+
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 16px;
+  }
+
+  .comparison {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .arrow {
+    transform: rotate(90deg);
+  }
+
+  .arrowCircle {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}

@@ -80,3 +80,24 @@
   color: #888;
   text-decoration: none;
 }
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 16px 24px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 32px 24px;
+  }
+
+  .desc {
+    max-width: none;
+  }
+
+  .bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+}
