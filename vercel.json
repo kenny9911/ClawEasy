@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm run build -w client",
+  "outputDirectory": "client/dist",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/health", "destination": "/api/health" },
+    { "source": "/api/templates", "destination": "/api/templates" },
+    { "source": "/api/plans", "destination": "/api/plans" },
+    { "source": "/api/contact", "destination": "/api/contact" }
+  ]
+}
