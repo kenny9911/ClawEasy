@@ -1,0 +1,62 @@
+.terminal {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(12, 13, 18, 0.9);
+  overflow: hidden;
+}
+
+.header {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.titleText {
+  font-size: 11px;
+  color: #666;
+  font-family: monospace;
+}
+
+.body {
+  padding: 16px;
+  min-height: 180px;
+}
+
+.line {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  opacity: 0;
+}
+
+.statusBad {
+  color: #666;
+  margin-top: 8px;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.statusGood {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 6px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  font-family: monospace;
+  font-size: 12px;
+}

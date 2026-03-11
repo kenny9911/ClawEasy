@@ -1,0 +1,52 @@
+.section {
+  padding: 100px 24px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.card {
+  padding: 28px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  color: #ff6b35;
+  margin-bottom: 16px;
+}
+
+.quote {
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.7;
+  font-style: italic;
+  margin-bottom: 20px;
+  flex: 1;
+}
+
+.author {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.role {
+  font-size: 12px;
+  color: #888;
+}

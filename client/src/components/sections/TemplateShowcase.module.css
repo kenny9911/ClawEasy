@@ -1,0 +1,77 @@
+.section {
+  padding: 100px 24px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.cardIcon {
+  font-size: 32px;
+}
+
+.cardBadge {
+  font-size: 10px;
+  color: #ff6b35;
+  background: rgba(255, 107, 53, 0.1);
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.cardTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin: 12px 0 6px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.cardDesc {
+  font-size: 12px;
+  color: #888;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.cardFooter {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+  color: #ff6b35;
+}
+
+.deploy {
+  font-size: 11px;
+  color: #666;
+}
