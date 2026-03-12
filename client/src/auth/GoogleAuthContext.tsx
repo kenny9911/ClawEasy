@@ -49,6 +49,7 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
         client_id: CLIENT_ID,
         callback: handleCredentialResponse,
         auto_select: true,
+        use_fedcm_for_prompt: false,
       });
     };
     document.head.appendChild(script);

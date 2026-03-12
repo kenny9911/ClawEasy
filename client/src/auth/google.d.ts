@@ -7,6 +7,7 @@ declare namespace google.accounts.id {
     client_id: string;
     callback: (response: CredentialResponse) => void;
     auto_select?: boolean;
+    use_fedcm_for_prompt?: boolean;
   }
   function initialize(config: IdConfiguration): void;
   function prompt(callback?: (notification: unknown) => void): void;
