@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
+import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../auth/GoogleAuthContext';
 import { ClawIcon, ArrowIcon, MenuIcon, XIcon } from '../../icons';
 import { Button } from '../common/Button';
 import styles from './Navbar.module.css';
@@ -12,6 +12,83 @@ const navLinks = ['Features', 'Templates', 'Pricing', 'Docs'];
 
 export function Navbar({ scrolled }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signIn, signOut } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const userMenu = user ? (
+    <div ref={menuRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: 0,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          width: 36,
+          height: 36,
+        }}
+      >
+        <img
+          src={user.picture}
+          alt={user.name}
+          width={36}
+          height={36}
+          style={{ borderRadius: '50%', display: 'block' }}
+          referrerPolicy="no-referrer"
+        />
+      </button>
+      {menuOpen && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 44,
+            right: 0,
+            background: '#1a1b1e',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8,
+            padding: '12px 16px',
+            minWidth: 180,
+            zIndex: 100,
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', marginBottom: 4 }}>
+            {user.name}
+          </div>
+          <div style={{ fontSize: 12, color: '#888', marginBottom: 12 }}>
+            {user.email}
+          </div>
+          <button
+            onClick={() => { signOut(); setMenuOpen(false); }}
+            style={{
+              width: '100%',
+              padding: '8px 0',
+              background: 'none',
+              border: 'none',
+              color: '#ff6b35',
+              cursor: 'pointer',
+              fontSize: 13,
+              textAlign: 'left',
+            }}
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
+    </div>
+  ) : null;
 
   return (
     <nav
@@ -43,23 +120,16 @@ export function Navbar({ scrolled }: NavbarProps) {
           ))}
         </div>
         <div className={styles.actions}>
-          <SignedOut>
-            <SignInButton mode="modal">
-              <Button variant="ghost">Sign In</Button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <Button variant="primary">
+          {user ? (
+            userMenu
+          ) : (
+            <>
+              <Button variant="ghost" onClick={signIn}>Sign In</Button>
+              <Button variant="primary" onClick={signIn}>
                 Get Started <ArrowIcon />
               </Button>
-            </SignUpButton>
-          </SignedOut>
-          <SignedIn>
-            <UserButton
-              appearance={{
-                elements: { avatarBox: { width: 36, height: 36 } },
-              }}
-            />
-          </SignedIn>
+            </>
+          )}
         </div>
         <button
           className={styles.hamburger}
@@ -83,25 +153,18 @@ export function Navbar({ scrolled }: NavbarProps) {
             </a>
           ))}
           <div className={styles.mobileActions}>
-            <SignedOut>
-              <SignInButton mode="modal">
-                <Button variant="ghost" style={{ width: '100%', justifyContent: 'center' }}>
+            {user ? (
+              userMenu
+            ) : (
+              <>
+                <Button variant="ghost" onClick={signIn} style={{ width: '100%', justifyContent: 'center' }}>
                   Sign In
                 </Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button variant="primary" style={{ width: '100%', justifyContent: 'center' }}>
+                <Button variant="primary" onClick={signIn} style={{ width: '100%', justifyContent: 'center' }}>
                   Get Started <ArrowIcon />
                 </Button>
-              </SignUpButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton
-                appearance={{
-                  elements: { avatarBox: { width: 36, height: 36 } },
-                }}
-              />
-            </SignedIn>
+              </>
+            )}
           </div>
         </div>
       )}
