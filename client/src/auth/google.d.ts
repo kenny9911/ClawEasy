@@ -14,3 +14,22 @@ declare namespace google.accounts.id {
   function disableAutoSelect(): void;
   function revoke(email: string, callback?: () => void): void;
 }
+
+declare namespace google.accounts.oauth2 {
+  interface TokenResponse {
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    scope: string;
+    error?: string;
+  }
+  interface TokenClientConfig {
+    client_id: string;
+    scope: string;
+    callback: (response: TokenResponse) => void;
+  }
+  interface TokenClient {
+    requestAccessToken: () => void;
+  }
+  function initTokenClient(config: TokenClientConfig): TokenClient;
+}

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 
 interface GoogleUser {
   name: string;
@@ -28,42 +28,44 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
   });
-
-  const handleCredentialResponse = useCallback((response: google.accounts.id.CredentialResponse) => {
-    const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    const googleUser: GoogleUser = {
-      name: payload.name,
-      email: payload.email,
-      picture: payload.picture,
-    };
-    setUser(googleUser);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser));
-  }, []);
+  const tokenClientRef = useRef<google.accounts.oauth2.TokenClient | null>(null);
 
   useEffect(() => {
     const script = document.createElement('script');
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.onload = () => {
-      google.accounts.id.initialize({
+      tokenClientRef.current = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
-        callback: handleCredentialResponse,
-        auto_select: true,
-        use_fedcm_for_prompt: false,
+        scope: 'openid profile email',
+        callback: async (response) => {
+          if (response.error) return;
+          // Fetch user info with the access token
+          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${response.access_token}` },
+          });
+          const info = await res.json();
+          const googleUser: GoogleUser = {
+            name: info.name,
+            email: info.email,
+            picture: info.picture,
+          };
+          setUser(googleUser);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser));
+        },
       });
     };
     document.head.appendChild(script);
     return () => { document.head.removeChild(script); };
-  }, [handleCredentialResponse]);
+  }, []);
 
   const signIn = useCallback(() => {
-    google.accounts.id.prompt();
+    tokenClientRef.current?.requestAccessToken();
   }, []);
 
   const signOut = useCallback(() => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
-    google.accounts.id.disableAutoSelect();
   }, []);
 
   return (
