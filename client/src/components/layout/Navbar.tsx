@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 import { ClawIcon, ArrowIcon, MenuIcon, XIcon } from '../../icons';
 import { Button } from '../common/Button';
 import styles from './Navbar.module.css';
@@ -42,10 +43,23 @@ export function Navbar({ scrolled }: NavbarProps) {
           ))}
         </div>
         <div className={styles.actions}>
-          <Button variant="ghost">Sign In</Button>
-          <Button variant="primary">
-            Get Started <ArrowIcon />
-          </Button>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <Button variant="ghost">Sign In</Button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <Button variant="primary">
+                Get Started <ArrowIcon />
+              </Button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton
+              appearance={{
+                elements: { avatarBox: { width: 36, height: 36 } },
+              }}
+            />
+          </SignedIn>
         </div>
         <button
           className={styles.hamburger}
@@ -69,12 +83,25 @@ export function Navbar({ scrolled }: NavbarProps) {
             </a>
           ))}
           <div className={styles.mobileActions}>
-            <Button variant="ghost" style={{ width: '100%', justifyContent: 'center' }}>
-              Sign In
-            </Button>
-            <Button variant="primary" style={{ width: '100%', justifyContent: 'center' }}>
-              Get Started <ArrowIcon />
-            </Button>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <Button variant="ghost" style={{ width: '100%', justifyContent: 'center' }}>
+                  Sign In
+                </Button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <Button variant="primary" style={{ width: '100%', justifyContent: 'center' }}>
+                  Get Started <ArrowIcon />
+                </Button>
+              </SignUpButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton
+                appearance={{
+                  elements: { avatarBox: { width: 36, height: 36 } },
+                }}
+              />
+            </SignedIn>
           </div>
         </div>
       )}
