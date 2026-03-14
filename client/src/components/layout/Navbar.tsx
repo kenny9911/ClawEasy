@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../auth/GoogleAuthContext';
 import { ClawIcon, ArrowIcon, MenuIcon, XIcon } from '../../icons';
+import { GoogleSignInButton } from '../auth/GoogleSignInButton';
 import { Button } from '../common/Button';
 import styles from './Navbar.module.css';
 
@@ -12,7 +13,7 @@ const navLinks = ['Features', 'Templates', 'Pricing', 'Docs'];
 
 export function Navbar({ scrolled }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, signIn, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -25,6 +26,11 @@ export function Navbar({ scrolled }: NavbarProps) {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const handleGetStarted = () => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setMobileOpen(false);
+  };
 
   const userMenu = user ? (
     <div ref={menuRef} style={{ position: 'relative' }}>
@@ -41,14 +47,33 @@ export function Navbar({ scrolled }: NavbarProps) {
           height: 36,
         }}
       >
-        <img
-          src={user.picture}
-          alt={user.name}
-          width={36}
-          height={36}
-          style={{ borderRadius: '50%', display: 'block' }}
-          referrerPolicy="no-referrer"
-        />
+        {user.picture ? (
+          <img
+            src={user.picture}
+            alt={user.name}
+            width={36}
+            height={36}
+            style={{ borderRadius: '50%', display: 'block' }}
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div
+            aria-hidden="true"
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              display: 'grid',
+              placeItems: 'center',
+              background: '#ff6b35',
+              color: '#08090c',
+              fontSize: 14,
+              fontWeight: 700,
+            }}
+          >
+            {user.name.slice(0, 1).toUpperCase()}
+          </div>
+        )}
       </button>
       {menuOpen && (
         <div
@@ -124,8 +149,8 @@ export function Navbar({ scrolled }: NavbarProps) {
             userMenu
           ) : (
             <>
-              <Button variant="ghost" onClick={signIn}>Sign In</Button>
-              <Button variant="primary" onClick={signIn}>
+              <GoogleSignInButton />
+              <Button variant="primary" onClick={handleGetStarted}>
                 Get Started <ArrowIcon />
               </Button>
             </>
@@ -157,10 +182,8 @@ export function Navbar({ scrolled }: NavbarProps) {
               userMenu
             ) : (
               <>
-                <Button variant="ghost" onClick={signIn} style={{ width: '100%', justifyContent: 'center' }}>
-                  Sign In
-                </Button>
-                <Button variant="primary" onClick={signIn} style={{ width: '100%', justifyContent: 'center' }}>
+                <GoogleSignInButton fullWidth />
+                <Button variant="primary" onClick={handleGetStarted} style={{ width: '100%', justifyContent: 'center' }}>
                   Get Started <ArrowIcon />
                 </Button>
               </>

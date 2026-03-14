@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 
 interface GoogleUser {
   name: string;
@@ -8,12 +8,16 @@ interface GoogleUser {
 
 interface AuthContextValue {
   user: GoogleUser | null;
+  ready: boolean;
+  renderSignInButton: (container: HTMLElement, width?: number) => void;
   signIn: () => void;
   signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
+  ready: false,
+  renderSignInButton: () => {},
   signIn: () => {},
   signOut: () => {},
 });
@@ -23,89 +27,178 @@ export const useAuth = () => useContext(AuthContext);
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const STORAGE_KEY = 'claweasy_user';
 
-let gsiReady = false;
 let gsiReadyPromise: Promise<void> | null = null;
 
+interface VerifyGoogleAuthResponse {
+  user: GoogleUser;
+}
+
+function hasGsiLoaded() {
+  return typeof google !== 'undefined' && Boolean(google.accounts?.id);
+}
+
 function loadGsi(): Promise<void> {
-  if (gsiReady) return Promise.resolve();
+  if (hasGsiLoaded()) return Promise.resolve();
   if (gsiReadyPromise) return gsiReadyPromise;
+
   gsiReadyPromise = new Promise((resolve, reject) => {
-    if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
-      gsiReady = true;
+    const existingScript = document.querySelector<HTMLScriptElement>('script[src="https://accounts.google.com/gsi/client"]');
+    const handleReady = () => {
+      if (!hasGsiLoaded()) {
+        reject(new Error('Google Identity Services did not finish loading'));
+        return;
+      }
       resolve();
+    };
+
+    if (hasGsiLoaded()) {
+      handleReady();
       return;
     }
-    const s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.async = true;
-    s.onload = () => { gsiReady = true; resolve(); };
-    s.onerror = () => reject(new Error('GIS load failed'));
-    document.head.appendChild(s);
+
+    if (existingScript) {
+      existingScript.addEventListener('load', handleReady, { once: true });
+      existingScript.addEventListener('error', () => reject(new Error('GIS load failed')), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.onload = handleReady;
+    script.onerror = () => reject(new Error('GIS load failed'));
+    document.head.appendChild(script);
   });
+
   return gsiReadyPromise;
 }
 
-export function GoogleAuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<GoogleUser | null>(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
+function readStoredUser() {
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (!stored) return null;
+
+  try {
+    return JSON.parse(stored) as GoogleUser;
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+    return null;
+  }
+}
+
+async function verifyGoogleCredential(credential: string): Promise<GoogleUser> {
+  const response = await fetch('/api/auth/google', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ credential }),
   });
-  const tokenClientRef = useRef<google.accounts.oauth2.TokenClient | null>(null);
-  const initializedRef = useRef(false);
 
-  useEffect(() => {
+  if (!response.ok) {
+    throw new Error(`Google sign-in verification failed: ${response.status}`);
+  }
+
+  const data = await response.json() as VerifyGoogleAuthResponse;
+  return data.user;
+}
+
+export function GoogleAuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<GoogleUser | null>(() => readStoredUser());
+  const [ready, setReady] = useState(false);
+  const initPromiseRef = useRef<Promise<void> | null>(null);
+
+  const initializeGoogleAuth = useCallback(() => {
     if (!CLIENT_ID) {
-      console.error('VITE_GOOGLE_CLIENT_ID is not set');
-      return;
+      const error = new Error('VITE_GOOGLE_CLIENT_ID is not set');
+      console.error(error.message);
+      return Promise.reject(error);
     }
-    if (initializedRef.current) return;
-    initializedRef.current = true;
 
-    loadGsi().then(() => {
-      tokenClientRef.current = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID,
-        scope: 'openid profile email',
-        callback: async (response) => {
-          if (response.error) {
-            console.error('Google OAuth error:', response.error);
-            return;
-          }
-          try {
-            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { Authorization: `Bearer ${response.access_token}` },
-            });
-            if (!res.ok) throw new Error(`UserInfo fetch failed: ${res.status}`);
-            const info = await res.json();
-            const googleUser: GoogleUser = {
-              name: info.name,
-              email: info.email,
-              picture: info.picture,
-            };
-            setUser(googleUser);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser));
-          } catch (err) {
-            console.error('Google sign-in failed:', err);
-          }
-        },
+    if (initPromiseRef.current) {
+      return initPromiseRef.current;
+    }
+
+    initPromiseRef.current = loadGsi()
+      .then(() => {
+        google.accounts.id.initialize({
+          client_id: CLIENT_ID,
+          callback: async ({ credential }) => {
+            try {
+              const googleUser = await verifyGoogleCredential(credential);
+              setUser(googleUser);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser));
+            } catch (err) {
+              console.error('Google sign-in failed:', err);
+            }
+          },
+          auto_select: false,
+          use_fedcm_for_prompt: false,
+        });
+
+        setReady(true);
+      })
+      .catch((err) => {
+        initPromiseRef.current = null;
+        throw err;
       });
-    });
+
+    return initPromiseRef.current;
   }, []);
 
-  const signIn = useCallback(() => {
-    if (!tokenClientRef.current) {
+  useEffect(() => {
+    let cancelled = false;
+
+    initializeGoogleAuth()
+      .then(() => {
+        if (cancelled) return;
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('Google sign-in failed to initialize:', err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initializeGoogleAuth]);
+
+  const renderSignInButton = useCallback((container: HTMLElement, width?: number) => {
+    if (!ready) {
       console.error('Google sign-in not ready yet');
       return;
     }
-    tokenClientRef.current.requestAccessToken();
-  }, []);
+
+    container.innerHTML = '';
+    google.accounts.id.renderButton(container, {
+      theme: 'outline',
+      size: 'large',
+      text: 'signin_with',
+      shape: 'pill',
+      logo_alignment: 'left',
+      width,
+    });
+  }, [ready]);
+
+  const signIn = useCallback(async () => {
+    try {
+      await initializeGoogleAuth();
+      google.accounts.id.prompt();
+    } catch (err) {
+      console.error('Google sign-in failed to start:', err);
+    }
+  }, [initializeGoogleAuth]);
 
   const signOut = useCallback(() => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    if (hasGsiLoaded()) {
+      google.accounts.id.disableAutoSelect();
+    }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, ready, renderSignInButton, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
