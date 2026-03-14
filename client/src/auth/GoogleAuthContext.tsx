@@ -10,14 +10,12 @@ interface AuthContextValue {
   user: GoogleUser | null;
   signIn: () => void;
   signOut: () => void;
-  renderButton: (element: HTMLElement) => void;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   signIn: () => {},
   signOut: () => {},
-  renderButton: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -53,6 +51,7 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
     return stored ? JSON.parse(stored) : null;
   });
   const initializedRef = useRef(false);
+  const hiddenBtnRef = useRef<HTMLDivElement | null>(null);
 
   const handleCredential = useCallback((credential: string) => {
     try {
@@ -77,6 +76,14 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
+    // Create hidden container for the Google button
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.top = '-9999px';
+    container.style.left = '-9999px';
+    document.body.appendChild(container);
+    hiddenBtnRef.current = container;
+
     loadGsi().then(() => {
       google.accounts.id.initialize({
         client_id: CLIENT_ID,
@@ -85,33 +92,27 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
         },
         use_fedcm_for_prompt: false,
       });
+
+      // Render a hidden Google button we can programmatically click
+      google.accounts.id.renderButton(container, {
+        type: 'standard',
+        size: 'large',
+      });
     });
   }, [handleCredential]);
 
-  const renderButton = useCallback((element: HTMLElement) => {
-    if (!gsiReady) {
-      loadGsi().then(() => {
-        google.accounts.id.renderButton(element, {
-          type: 'standard',
-          theme: 'filled_black',
-          size: 'large',
-          text: 'signin_with',
-          shape: 'pill',
-        });
-      });
-    } else {
-      google.accounts.id.renderButton(element, {
-        type: 'standard',
-        theme: 'filled_black',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'pill',
-      });
-    }
-  }, []);
-
   const signIn = useCallback(() => {
-    google.accounts.id.prompt();
+    // Click the hidden Google button to trigger the popup
+    const googleBtn = hiddenBtnRef.current?.querySelector('[role="button"]') as HTMLElement
+      || hiddenBtnRef.current?.querySelector('div[aria-labelledby]') as HTMLElement
+      || hiddenBtnRef.current?.querySelector('iframe');
+
+    if (googleBtn) {
+      googleBtn.click();
+    } else {
+      // Fallback: try One Tap prompt
+      google.accounts.id.prompt();
+    }
   }, []);
 
   const signOut = useCallback(() => {
@@ -121,7 +122,7 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut, renderButton }}>
+    <AuthContext.Provider value={{ user, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
