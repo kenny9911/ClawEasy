@@ -5,25 +5,35 @@ export const authRouter = Router();
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? process.env.VITE_GOOGLE_CLIENT_ID ?? '';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? process.env.VITE_GOOGLE_CLIENT_SECRET ?? '';
 
+function getFrontendOrigin(req: import('express').Request): string {
+  if (process.env.NODE_ENV === 'production') {
+    const proto = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+    return `${proto}://${host}`;
+  }
+  return 'http://localhost:5173';
+}
+
 // OAuth 2.0 callback — exchanges authorization code for user info
 authRouter.get('/auth/google/callback', async (req, res) => {
+  const frontend = getFrontendOrigin(req);
   const code = typeof req.query.code === 'string' ? req.query.code : '';
   const error = typeof req.query.error === 'string' ? req.query.error : '';
 
   if (error) {
     console.error('Google OAuth error:', error);
-    res.redirect('/?auth_error=' + encodeURIComponent(error));
+    res.redirect(`${frontend}/?auth_error=${encodeURIComponent(error)}`);
     return;
   }
 
   if (!code) {
-    res.redirect('/?auth_error=missing_code');
+    res.redirect(`${frontend}/?auth_error=missing_code`);
     return;
   }
 
   if (!CLIENT_ID || !CLIENT_SECRET) {
     console.error('Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET env vars');
-    res.redirect('/?auth_error=server_config');
+    res.redirect(`${frontend}/?auth_error=server_config`);
     return;
   }
 
@@ -50,7 +60,7 @@ authRouter.get('/auth/google/callback', async (req, res) => {
     if (!tokenRes.ok) {
       const errBody = await tokenRes.text();
       console.error('Token exchange failed:', tokenRes.status, errBody);
-      res.redirect('/?auth_error=token_exchange');
+      res.redirect(`${frontend}/?auth_error=token_exchange`);
       return;
     }
 
@@ -63,7 +73,7 @@ authRouter.get('/auth/google/callback', async (req, res) => {
 
     if (!userInfoRes.ok) {
       console.error('Failed to fetch user info:', userInfoRes.status);
-      res.redirect('/?auth_error=userinfo');
+      res.redirect(`${frontend}/?auth_error=userinfo`);
       return;
     }
 
@@ -74,7 +84,7 @@ authRouter.get('/auth/google/callback', async (req, res) => {
     };
 
     if (!profile.email) {
-      res.redirect('/?auth_error=no_email');
+      res.redirect(`${frontend}/?auth_error=no_email`);
       return;
     }
 
@@ -84,13 +94,10 @@ authRouter.get('/auth/google/callback', async (req, res) => {
       picture: profile.picture ?? '',
     };
 
-    // Redirect back to the frontend with user data
-    // In local dev, Vite runs on a different port — redirect to the Vite origin
-    const frontendOrigin = process.env.NODE_ENV === 'production' ? origin : 'http://localhost:5173';
     const userParam = encodeURIComponent(JSON.stringify(user));
-    res.redirect(`${frontendOrigin}/?google_user=${userParam}`);
+    res.redirect(`${frontend}/?google_user=${userParam}`);
   } catch (err) {
     console.error('OAuth callback error:', err);
-    res.redirect('/?auth_error=server_error');
+    res.redirect(`${frontend}/?auth_error=server_error`);
   }
 });

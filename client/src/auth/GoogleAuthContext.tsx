@@ -61,7 +61,9 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const redirectUri = `${window.location.origin}/api/auth/google/callback`;
+    // In local dev, Google redirects the browser directly — must hit Express on 3001
+    const apiOrigin = import.meta.env.DEV ? 'http://localhost:3001' : window.location.origin;
+    const redirectUri = `${apiOrigin}/api/auth/google/callback`;
     const params = new URLSearchParams({
       client_id: CLIENT_ID,
       redirect_uri: redirectUri,
