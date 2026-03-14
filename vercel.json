@@ -3,6 +3,17 @@
   "outputDirectory": "client/dist",
   "installCommand": "npm install",
   "framework": "vite",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/api/health", "destination": "/api/health" },
     { "source": "/api/templates", "destination": "/api/templates" },
