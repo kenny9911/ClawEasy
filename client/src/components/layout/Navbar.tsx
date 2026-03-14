@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../auth/GoogleAuthContext';
 import { ClawIcon, ArrowIcon, MenuIcon, XIcon } from '../../icons';
-import { GoogleSignInButton } from '../auth/GoogleSignInButton';
 import { Button } from '../common/Button';
 import styles from './Navbar.module.css';
 
@@ -13,7 +12,7 @@ const navLinks = ['Features', 'Templates', 'Pricing', 'Docs'];
 
 export function Navbar({ scrolled }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signIn, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -149,7 +148,9 @@ export function Navbar({ scrolled }: NavbarProps) {
             userMenu
           ) : (
             <>
-              <GoogleSignInButton />
+              <Button variant="ghost" onClick={signIn}>
+                Sign In
+              </Button>
               <Button variant="primary" onClick={handleGetStarted}>
                 Get Started <ArrowIcon />
               </Button>
@@ -182,7 +183,9 @@ export function Navbar({ scrolled }: NavbarProps) {
               userMenu
             ) : (
               <>
-                <GoogleSignInButton fullWidth />
+                <Button variant="ghost" onClick={() => { signIn(); setMobileOpen(false); }} style={{ width: '100%', justifyContent: 'center' }}>
+                  Sign In
+                </Button>
                 <Button variant="primary" onClick={handleGetStarted} style={{ width: '100%', justifyContent: 'center' }}>
                   Get Started <ArrowIcon />
                 </Button>
