@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../auth/GoogleAuthContext';
 import { ClawIcon, ArrowIcon, MenuIcon, XIcon } from '../../icons';
 import { Button } from '../common/Button';
@@ -10,9 +10,24 @@ interface NavbarProps {
 
 const navLinks = ['Features', 'Templates', 'Pricing', 'Docs'];
 
+function GoogleSignInButton() {
+  const { renderButton } = useAuth();
+  const btnRef = useRef<HTMLDivElement>(null);
+  const rendered = useRef(false);
+
+  useEffect(() => {
+    if (btnRef.current && !rendered.current) {
+      rendered.current = true;
+      renderButton(btnRef.current);
+    }
+  }, [renderButton]);
+
+  return <div ref={btnRef} />;
+}
+
 export function Navbar({ scrolled }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, signIn, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -120,16 +135,7 @@ export function Navbar({ scrolled }: NavbarProps) {
           ))}
         </div>
         <div className={styles.actions}>
-          {user ? (
-            userMenu
-          ) : (
-            <>
-              <Button variant="ghost" onClick={signIn}>Sign In</Button>
-              <Button variant="primary" onClick={signIn}>
-                Get Started <ArrowIcon />
-              </Button>
-            </>
-          )}
+          {user ? userMenu : <GoogleSignInButton />}
         </div>
         <button
           className={styles.hamburger}
@@ -153,18 +159,7 @@ export function Navbar({ scrolled }: NavbarProps) {
             </a>
           ))}
           <div className={styles.mobileActions}>
-            {user ? (
-              userMenu
-            ) : (
-              <>
-                <Button variant="ghost" onClick={signIn} style={{ width: '100%', justifyContent: 'center' }}>
-                  Sign In
-                </Button>
-                <Button variant="primary" onClick={signIn} style={{ width: '100%', justifyContent: 'center' }}>
-                  Get Started <ArrowIcon />
-                </Button>
-              </>
-            )}
+            {user ? userMenu : <GoogleSignInButton />}
           </div>
         </div>
       )}
