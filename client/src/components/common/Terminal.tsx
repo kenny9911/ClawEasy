@@ -7,9 +7,10 @@ interface TerminalProps {
   title: string;
   variant?: 'default' | 'branded';
   successMessage?: string;
+  statusBadText?: string;
 }
 
-export function Terminal({ lines, title, variant = 'default', successMessage }: TerminalProps) {
+export function Terminal({ lines, title, variant = 'default', successMessage, statusBadText }: TerminalProps) {
   const [visibleLines, setVisibleLines] = useState<TerminalLine[]>([]);
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export function Terminal({ lines, title, variant = 'default', successMessage }: 
         ))}
         {!isBranded && allDone && visibleLines.length > 0 && (
           <div className={styles.statusBad}>
-            ✗ 3 hours later... still not running
+            {statusBadText || '✗ 3 hours later... still not running'}
           </div>
         )}
         {isBranded && allDone && successMessage && (

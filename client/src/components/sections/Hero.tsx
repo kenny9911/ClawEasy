@@ -1,9 +1,14 @@
 import { PlayIcon } from '../../icons';
 import { Button } from '../common/Button';
-import { stats } from '../../data/stats';
+import { useI18n } from '../../i18n/I18nContext';
 import styles from './Hero.module.css';
 
+const statValues = ['187K+', '<60s', '50+', '99.9%'] as const;
+
 export function Hero() {
+  const { t } = useI18n();
+  const statLabels = [t.stats.stars, t.stats.deployTime, t.stats.integrations, t.stats.uptime];
+
   return (
     <section className={styles.hero}>
       <div className={styles.orbLeft} />
@@ -12,38 +17,34 @@ export function Hero() {
       <div className={styles.content}>
         <div className={styles.badge}>
           <span className={styles.badgeDot} />
-          <span>Powered by OpenClaw — 187K+ GitHub Stars</span>
+          <span>{t.hero.badge}</span>
         </div>
 
         <h1 className={styles.title}>
-          Your OpenClaw,
+          {t.hero.titleLine1}
           <br />
-          <span className={styles.titleGradient}>Ready in 60 Seconds</span>
+          <span className={styles.titleGradient}>{t.hero.titleLine2}</span>
         </h1>
 
-        <p className={styles.subtitle}>
-          Choose a template, channel, and model — we handle hosting, updates,
-          <br />
-          monitoring, security, and maintenance. The managed control plane for teams.
-        </p>
+        <p className={styles.subtitle}>{t.hero.subtitle}</p>
 
         <div className={styles.ctas}>
           <Button variant="primary" style={{ padding: '14px 32px', fontSize: 16, gap: 8 }}>
-            <PlayIcon /> Deploy Your Agent
+            <PlayIcon /> {t.hero.deploy}
           </Button>
           <Button
             variant="ghost"
             style={{ padding: '14px 32px', fontSize: 16, border: '1px solid rgba(255,255,255,0.1)' }}
           >
-            Watch Demo
+            {t.hero.demo}
           </Button>
         </div>
 
         <div className={styles.statsBar}>
-          {stats.map((s, i) => (
+          {statValues.map((value, i) => (
             <div key={i} className={styles.statItem}>
-              <div className={styles.statValue}>{s.value}</div>
-              <div className={styles.statLabel}>{s.label}</div>
+              <div className={styles.statValue}>{value}</div>
+              <div className={styles.statLabel}>{statLabels[i]}</div>
             </div>
           ))}
         </div>

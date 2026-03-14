@@ -1,34 +1,30 @@
 import { Button } from '../common/Button';
+import { useI18n } from '../../i18n/I18nContext';
 import styles from './CallToAction.module.css';
 
 export function CallToAction() {
+  const { t } = useI18n();
+
   return (
     <section className={styles.section}>
       <div className={styles.bg} />
       <div className={styles.content}>
         <h2 className={styles.title}>
-          Ready to deploy your
+          {t.cta.title1}
           <br />
-          <span className={styles.accent}>first agent?</span>
+          <span className={styles.accent}>{t.cta.title2}</span>
         </h2>
-        <p className={styles.subtitle}>
-          Free 14-day trial. No credit card required. Deploy in 60 seconds.
-        </p>
+        <p className={styles.subtitle}>{t.cta.subtitle}</p>
         <Button
           variant="primary"
-          style={{
-            padding: '16px 40px',
-            fontSize: 17,
-            gap: 10,
-            animation: 'pulse-glow 3s infinite',
-          }}
+          style={{ padding: '16px 40px', fontSize: 17, gap: 10, animation: 'pulse-glow 3s infinite' }}
         >
-          🦞 Start Building for Free
+          {t.cta.button}
         </Button>
         <div className={styles.checks}>
-          <span>✓ Free 14-day trial</span>
-          <span>✓ No credit card</span>
-          <span>✓ Cancel anytime</span>
+          <span>{t.cta.check1}</span>
+          <span>{t.cta.check2}</span>
+          <span>{t.cta.check3}</span>
         </div>
       </div>
     </section>

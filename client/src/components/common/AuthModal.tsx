@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useAuth } from '../../auth/AuthContext';
+import { useI18n } from '../../i18n/I18nContext';
 import { XIcon } from '../../icons';
 import styles from './AuthModal.module.css';
 
@@ -16,6 +17,7 @@ const GoogleLogo = () => (
 
 export function AuthModal() {
   const { authModalOpen, closeAuthModal, signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuth();
+  const { t } = useI18n();
   const [view, setView] = useState<AuthView>('signin');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -62,12 +64,12 @@ export function AuthModal() {
       }
     } else {
       if (!name.trim()) {
-        setError('Name is required');
+        setError(t.auth.nameRequired);
         setSubmitting(false);
         return;
       }
       if (password.length < 6) {
-        setError('Password must be at least 6 characters');
+        setError(t.auth.passwordMin);
         setSubmitting(false);
         return;
       }
@@ -96,33 +98,31 @@ export function AuthModal() {
         </button>
 
         <h2 className={styles.title}>
-          {view === 'signin' ? 'Welcome back' : 'Create your account'}
+          {view === 'signin' ? t.auth.welcomeBack : t.auth.createAccount}
         </h2>
         <p className={styles.subtitle}>
-          {view === 'signin'
-            ? 'Sign in to your ClawEasy account'
-            : 'Get started with ClawEasy'}
+          {view === 'signin' ? t.auth.signInSubtitle : t.auth.signUpSubtitle}
         </p>
 
         <button className={styles.googleBtn} onClick={signInWithGoogle} type="button">
           <GoogleLogo />
-          Continue with Google
+          {t.auth.continueGoogle}
         </button>
 
         <div className={styles.divider}>
-          <span>or</span>
+          <span>{t.auth.or}</span>
         </div>
 
         {signUpSuccess ? (
           <div className={styles.successMsg}>
-            Check your email to confirm your account, then sign in.
+            {t.auth.emailConfirm}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className={styles.form}>
             {view === 'signup' && (
               <input
                 type="text"
-                placeholder="Name"
+                placeholder={t.auth.namePlaceholder}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={styles.input}
@@ -132,7 +132,7 @@ export function AuthModal() {
             )}
             <input
               type="email"
-              placeholder="Email"
+              placeholder={t.auth.emailPlaceholder}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
@@ -141,7 +141,7 @@ export function AuthModal() {
             />
             <input
               type="password"
-              placeholder="Password"
+              placeholder={t.auth.passwordPlaceholder}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={styles.input}
@@ -152,8 +152,8 @@ export function AuthModal() {
             {error && <div className={styles.error}>{error}</div>}
             <button type="submit" className={styles.submitBtn} disabled={submitting}>
               {submitting
-                ? (view === 'signin' ? 'Signing in...' : 'Creating account...')
-                : (view === 'signin' ? 'Sign In' : 'Create Account')}
+                ? (view === 'signin' ? t.auth.signingIn : t.auth.creatingAccount)
+                : (view === 'signin' ? t.auth.signInBtn : t.auth.createAccountBtn)}
             </button>
           </form>
         )}
@@ -161,16 +161,16 @@ export function AuthModal() {
         <p className={styles.switchText}>
           {view === 'signin' ? (
             <>
-              Don&apos;t have an account?{' '}
+              {t.auth.noAccount}{' '}
               <button type="button" className={styles.switchBtn} onClick={() => switchView('signup')}>
-                Sign Up
+                {t.auth.signUp}
               </button>
             </>
           ) : (
             <>
-              Already have an account?{' '}
+              {t.auth.hasAccount}{' '}
               <button type="button" className={styles.switchBtn} onClick={() => switchView('signin')}>
-                Sign In
+                {t.auth.signInBtn}
               </button>
             </>
           )}

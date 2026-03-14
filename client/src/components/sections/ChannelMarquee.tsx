@@ -1,29 +1,19 @@
 import { channels } from '../../data/channels';
+import { useI18n } from '../../i18n/I18nContext';
 import styles from './ChannelMarquee.module.css';
 
 export function ChannelMarquee() {
+  const { t } = useI18n();
   const tripled = [...channels, ...channels, ...channels];
 
   return (
     <section className={styles.section}>
-      <div className={styles.label}>CONNECT EVERYWHERE</div>
+      <div className={styles.label}>{t.channels.label}</div>
       <div className={styles.track}>
         <div className={styles.slider}>
           {tripled.map((ch, i) => (
-            <div
-              key={i}
-              className={styles.pill}
-              style={{
-                border: `1px solid ${ch.color}30`,
-                background: `${ch.color}08`,
-              }}
-            >
-              <div
-                className={styles.pillIcon}
-                style={{ background: `${ch.color}25`, color: ch.color }}
-              >
-                {ch.name[0]}
-              </div>
+            <div key={i} className={styles.pill} style={{ border: `1px solid ${ch.color}30`, background: `${ch.color}08` }}>
+              <div className={styles.pillIcon} style={{ background: `${ch.color}25`, color: ch.color }}>{ch.name[0]}</div>
               <span className={styles.pillName}>{ch.name}</span>
             </div>
           ))}

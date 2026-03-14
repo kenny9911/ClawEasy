@@ -1,8 +1,12 @@
 import { ClawIcon } from '../../icons';
-import { footerColumns } from '../../data/footer';
+import { useI18n } from '../../i18n/I18nContext';
 import styles from './Footer.module.css';
 
 export function Footer() {
+  const { t } = useI18n();
+
+  const columns = [t.footer.product, t.footer.developers, t.footer.company, t.footer.legal];
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
@@ -14,12 +18,9 @@ export function Footer() {
                 Claw<span className={styles.accent}>Easy</span>
               </span>
             </div>
-            <p className={styles.desc}>
-              The managed OpenClaw control plane for teams and businesses. Deploy
-              autonomous AI agents across any channel in 60 seconds.
-            </p>
+            <p className={styles.desc}>{t.footer.desc}</p>
           </div>
-          {footerColumns.map((col, i) => (
+          {columns.map((col, i) => (
             <div key={i}>
               <div className={styles.colTitle}>{col.title}</div>
               {col.links.map((link, j) => (
@@ -33,9 +34,7 @@ export function Footer() {
           ))}
         </div>
         <div className={styles.bottom}>
-          <span className={styles.copyright}>
-            © 2026 ClawEasy. All rights reserved.
-          </span>
+          <span className={styles.copyright}>{t.footer.copyright}</span>
           <div className={styles.socials}>
             {['GitHub', 'Discord', 'Twitter'].map((s, i) => (
               <a key={i} href="#" className={`nav-link ${styles.socialLink}`}>

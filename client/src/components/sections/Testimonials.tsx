@@ -1,29 +1,29 @@
 import { StarIcon } from '../../icons';
 import { SectionHeader } from '../common/SectionHeader';
-import { testimonials } from '../../data/testimonials';
+import { useI18n } from '../../i18n/I18nContext';
 import styles from './Testimonials.module.css';
 
 export function Testimonials() {
+  const { t } = useI18n();
+
   return (
     <section className={styles.section}>
       <div className={styles.container}>
         <SectionHeader
-          label="TRUSTED BY BUILDERS"
-          title="Join thousands running autonomous agents"
+          label={t.testimonials.label}
+          title={t.testimonials.title}
         />
 
         <div className={styles.grid}>
-          {testimonials.map((t, i) => (
+          {t.testimonials.items.map((item, i) => (
             <div key={i} className={`hover-card ${styles.card}`}>
               <div className={styles.stars}>
-                {[...Array(5)].map((_, j) => (
-                  <StarIcon key={j} />
-                ))}
+                {[...Array(5)].map((_, j) => <StarIcon key={j} />)}
               </div>
-              <p className={styles.quote}>"{t.quote}"</p>
+              <p className={styles.quote}>"{item.quote}"</p>
               <div>
-                <div className={styles.author}>{t.author}</div>
-                <div className={styles.role}>{t.role}</div>
+                <div className={styles.author}>{item.author}</div>
+                <div className={styles.role}>{item.role}</div>
               </div>
             </div>
           ))}

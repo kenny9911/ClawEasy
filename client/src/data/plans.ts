@@ -20,21 +20,12 @@ export const plans: Plan[] = [
     popular: true,
   },
   {
-    name: 'Team',
+    name: 'Max',
     price: '$79',
     period: '/mo',
     desc: 'For teams that need collaboration',
     features: ['10 Agent Instances', '5 Team Seats + RBAC', 'Shared Workspace', 'Team Billing + API Access', '8 vCPU / 16GB RAM', '160GB SSD + Priority Support'],
     cta: 'Start Free Trial',
-    popular: false,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    period: '',
-    desc: 'For organizations at scale',
-    features: ['Unlimited Agents & Seats', 'SSO / SAML', 'Audit Logs + Compliance', 'Data Residency Options', 'Dedicated Cluster', '24/7 Dedicated Support'],
-    cta: 'Contact Sales',
     popular: false,
   },
 ];

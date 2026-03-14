@@ -1,18 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
+import { useI18n } from '../../i18n/I18nContext';
 import { ClawIcon, ArrowIcon, MenuIcon, XIcon } from '../../icons';
 import { Button } from '../common/Button';
+import { LanguageSelector } from '../common/LanguageSelector';
 import styles from './Navbar.module.css';
 
 interface NavbarProps {
   scrolled: boolean;
 }
 
-const navLinks = ['Features', 'Templates', 'Pricing', 'Docs'];
+const navKeys = ['features', 'templates', 'pricing', 'docs'] as const;
 
 export function Navbar({ scrolled }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, openAuthModal, signOut } = useAuth();
+  const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -107,7 +110,7 @@ export function Navbar({ scrolled }: NavbarProps) {
               textAlign: 'left',
             }}
           >
-            Sign Out
+            {t.nav.signOut}
           </button>
         </div>
       )}
@@ -133,26 +136,27 @@ export function Navbar({ scrolled }: NavbarProps) {
           </span>
         </div>
         <div className={styles.links}>
-          {navLinks.map((link) => (
+          {navKeys.map((key) => (
             <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
+              key={key}
+              href={`#${key}`}
               className={`nav-link ${styles.link}`}
             >
-              {link}
+              {t.nav[key]}
             </a>
           ))}
         </div>
         <div className={styles.actions}>
+          <LanguageSelector />
           {user ? (
             userMenu
           ) : (
             <>
               <Button variant="ghost" onClick={openAuthModal}>
-                Sign In
+                {t.nav.signIn}
               </Button>
               <Button variant="primary" onClick={handleGetStarted}>
-                Get Started <ArrowIcon />
+                {t.nav.getStarted} <ArrowIcon />
               </Button>
             </>
           )}
@@ -168,14 +172,14 @@ export function Navbar({ scrolled }: NavbarProps) {
 
       {mobileOpen && (
         <div className={styles.mobileMenu}>
-          {navLinks.map((link) => (
+          {navKeys.map((key) => (
             <a
-              key={link}
-              href={`#${link.toLowerCase()}`}
+              key={key}
+              href={`#${key}`}
               className={styles.mobileLink}
               onClick={() => setMobileOpen(false)}
             >
-              {link}
+              {t.nav[key]}
             </a>
           ))}
           <div className={styles.mobileActions}>
@@ -184,10 +188,10 @@ export function Navbar({ scrolled }: NavbarProps) {
             ) : (
               <>
                 <Button variant="ghost" onClick={() => { openAuthModal(); setMobileOpen(false); }} style={{ width: '100%', justifyContent: 'center' }}>
-                  Sign In
+                  {t.nav.signIn}
                 </Button>
                 <Button variant="primary" onClick={handleGetStarted} style={{ width: '100%', justifyContent: 'center' }}>
-                  Get Started <ArrowIcon />
+                  {t.nav.getStarted} <ArrowIcon />
                 </Button>
               </>
             )}
