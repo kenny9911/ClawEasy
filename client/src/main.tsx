@@ -1,13 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { GoogleAuthProvider } from './auth/GoogleAuthContext';
+import { AuthProvider } from './auth/AuthContext';
 import App from './App';
 import './global.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <GoogleAuthProvider>
+    <AuthProvider>
       <App />
-    </GoogleAuthProvider>
+    </AuthProvider>
   </StrictMode>
 );

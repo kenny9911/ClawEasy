@@ -10,6 +10,7 @@ import { TemplateShowcase } from './components/sections/TemplateShowcase';
 import { Pricing } from './components/sections/Pricing';
 import { Testimonials } from './components/sections/Testimonials';
 import { CallToAction } from './components/sections/CallToAction';
+import { AuthModal } from './components/common/AuthModal';
 import { noiseSvg } from './theme';
 
 export default function App() {
@@ -38,6 +39,7 @@ export default function App() {
       <Testimonials />
       <CallToAction />
       <Footer />
+      <AuthModal />
     </div>
   );
 }
