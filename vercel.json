@@ -19,6 +19,7 @@
     { "source": "/api/templates", "destination": "/api/templates" },
     { "source": "/api/plans", "destination": "/api/plans" },
     { "source": "/api/contact", "destination": "/api/contact" },
-    { "source": "/api/auth/google", "destination": "/api/auth/google" }
+    { "source": "/api/auth/google", "destination": "/api/auth/google" },
+    { "source": "/api/auth/google/callback", "destination": "/api/auth/google/callback" }
   ]
 }
