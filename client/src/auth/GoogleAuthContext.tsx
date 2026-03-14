@@ -50,23 +50,8 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
   });
+  const tokenClientRef = useRef<google.accounts.oauth2.TokenClient | null>(null);
   const initializedRef = useRef(false);
-  const hiddenBtnRef = useRef<HTMLDivElement | null>(null);
-
-  const handleCredential = useCallback((credential: string) => {
-    try {
-      const payload = JSON.parse(atob(credential.split('.')[1]));
-      const u: GoogleUser = {
-        name: payload.name,
-        email: payload.email,
-        picture: payload.picture,
-      };
-      setUser(u);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    } catch (err) {
-      console.error('Failed to parse Google credential:', err);
-    }
-  }, []);
 
   useEffect(() => {
     if (!CLIENT_ID) {
@@ -76,49 +61,47 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    // Create hidden container for the Google button
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.top = '-9999px';
-    container.style.left = '-9999px';
-    document.body.appendChild(container);
-    hiddenBtnRef.current = container;
-
     loadGsi().then(() => {
-      google.accounts.id.initialize({
+      tokenClientRef.current = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
-        callback: (response: google.accounts.id.CredentialResponse) => {
-          handleCredential(response.credential);
+        scope: 'openid profile email',
+        callback: async (response) => {
+          if (response.error) {
+            console.error('Google OAuth error:', response.error);
+            return;
+          }
+          try {
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${response.access_token}` },
+            });
+            if (!res.ok) throw new Error(`UserInfo fetch failed: ${res.status}`);
+            const info = await res.json();
+            const googleUser: GoogleUser = {
+              name: info.name,
+              email: info.email,
+              picture: info.picture,
+            };
+            setUser(googleUser);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser));
+          } catch (err) {
+            console.error('Google sign-in failed:', err);
+          }
         },
-        use_fedcm_for_prompt: false,
-      });
-
-      // Render a hidden Google button we can programmatically click
-      google.accounts.id.renderButton(container, {
-        type: 'standard',
-        size: 'large',
       });
     });
-  }, [handleCredential]);
+  }, []);
 
   const signIn = useCallback(() => {
-    // Click the hidden Google button to trigger the popup
-    const googleBtn = hiddenBtnRef.current?.querySelector('[role="button"]') as HTMLElement
-      || hiddenBtnRef.current?.querySelector('div[aria-labelledby]') as HTMLElement
-      || hiddenBtnRef.current?.querySelector('iframe');
-
-    if (googleBtn) {
-      googleBtn.click();
-    } else {
-      // Fallback: try One Tap prompt
-      google.accounts.id.prompt();
+    if (!tokenClientRef.current) {
+      console.error('Google sign-in not ready yet');
+      return;
     }
+    tokenClientRef.current.requestAccessToken();
   }, []);
 
   const signOut = useCallback(() => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
-    google.accounts.id.disableAutoSelect();
   }, []);
 
   return (
