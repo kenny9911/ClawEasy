@@ -39,19 +39,26 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
         client_id: CLIENT_ID,
         scope: 'openid profile email',
         callback: async (response) => {
-          if (response.error) return;
-          // Fetch user info with the access token
-          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { Authorization: `Bearer ${response.access_token}` },
-          });
-          const info = await res.json();
-          const googleUser: GoogleUser = {
-            name: info.name,
-            email: info.email,
-            picture: info.picture,
-          };
-          setUser(googleUser);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser));
+          if (response.error) {
+            console.error('Google OAuth error:', response.error);
+            return;
+          }
+          try {
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${response.access_token}` },
+            });
+            if (!res.ok) throw new Error(`UserInfo fetch failed: ${res.status}`);
+            const info = await res.json();
+            const googleUser: GoogleUser = {
+              name: info.name,
+              email: info.email,
+              picture: info.picture,
+            };
+            setUser(googleUser);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(googleUser));
+          } catch (err) {
+            console.error('Google sign-in failed:', err);
+          }
         },
       });
     };
