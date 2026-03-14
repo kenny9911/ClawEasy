@@ -23,18 +23,54 @@ export const useAuth = () => useContext(AuthContext);
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const STORAGE_KEY = 'claweasy_user';
 
+// Track script loading globally to survive StrictMode double-mount
+let gsiScriptLoaded = false;
+let gsiScriptLoading = false;
+
+function loadGsiScript(): Promise<void> {
+  if (gsiScriptLoaded) return Promise.resolve();
+  if (gsiScriptLoading) {
+    return new Promise((resolve) => {
+      const check = setInterval(() => {
+        if (gsiScriptLoaded) { clearInterval(check); resolve(); }
+      }, 50);
+    });
+  }
+  gsiScriptLoading = true;
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    if (existing) {
+      gsiScriptLoaded = true;
+      gsiScriptLoading = false;
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => { gsiScriptLoaded = true; gsiScriptLoading = false; resolve(); };
+    script.onerror = () => { gsiScriptLoading = false; reject(new Error('Failed to load Google Identity Services')); };
+    document.head.appendChild(script);
+  });
+}
+
 export function GoogleAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<GoogleUser | null>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
   });
   const tokenClientRef = useRef<google.accounts.oauth2.TokenClient | null>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.onload = () => {
+    if (!CLIENT_ID) {
+      console.error('VITE_GOOGLE_CLIENT_ID is not set!');
+      return;
+    }
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    loadGsiScript().then(() => {
       tokenClientRef.current = google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
         scope: 'openid profile email',
@@ -61,13 +97,17 @@ export function GoogleAuthProvider({ children }: { children: ReactNode }) {
           }
         },
       });
-    };
-    document.head.appendChild(script);
-    return () => { document.head.removeChild(script); };
+    }).catch((err) => {
+      console.error(err);
+    });
   }, []);
 
   const signIn = useCallback(() => {
-    tokenClientRef.current?.requestAccessToken();
+    if (!tokenClientRef.current) {
+      console.error('Google sign-in not ready yet');
+      return;
+    }
+    tokenClientRef.current.requestAccessToken();
   }, []);
 
   const signOut = useCallback(() => {
